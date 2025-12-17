@@ -146,33 +146,66 @@ button:active {
     transform: scale(0.98);
 }
 
-/* ===== LYRICS BOX ===== */
+/* ===== LYRICS & RESULTS BOX ===== */
 .lyrics-box {
-    margin-top: 1rem;
+    margin-top: 2rem;
     width: 100%;
     max-width: 650px;
-    background: transparent;
-    border: none;
-    padding: 0;
-    box-shadow: none;
-    text-align: center; /* Center lyrics for a cleaner look */
+    
+    /* Glassmorphism background */
+    background: rgba(15, 23, 42, 0.4); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 2.5rem;
+    
+    /* Smooth entry animation */
+    animation: fadeSlideUp 0.8s ease-out forwards;
+    text-align: center;
 }
 
+/* Specific styling for the Error state */
+.lyrics-box.error-box {
+    border-color: rgba(239, 68, 68, 0.3); /* Red border */
+    background: rgba(69, 10, 10, 0.3); /* Red tint background */
+}
+
+.lyrics-box.error-box h2 {
+    color: #f87171; /* Soft red title */
+}
+
+/* Header Styling */
 .lyrics-box h2 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
-    color: var(--text-main);
+    font-size: 1.8rem;
+    color: #fff;
     margin-bottom: 1.5rem;
     font-weight: 600;
+    letter-spacing: -0.5px;
 }
 
+/* The Lyrics Text */
 .lyrics-box pre {
-    white-space: pre-wrap;
-    font-family: 'Inter', sans-serif; /* Clean reading font */
-    color: var(--text-muted);
-    line-height: 1.8;
-    font-size: 1.1rem;
-    text-shadow: none;
+    white-space: pre-wrap;      /* Wraps text so it doesn't scroll horizontally */
+    font-family: 'Inter', sans-serif; 
+    color: #cbd5e1;             /* Soft grey-blue text */
+    line-height: 1.9;
+    font-size: 1.05rem;
+    text-align: center;         /* Center aligned looks more like a poetic sheet */
+}
+
+/* Animation for when the lyrics appear */
+@keyframes fadeSlideUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
 /* ===== SCROLLBAR ===== */
@@ -195,4 +228,118 @@ button:active {
     .app { padding: 1rem; }
     form { padding: 2rem; }
     .logo { font-size: 2rem; }
+}
+
+/* ===== LYRICS CONTAINER ===== */
+.lyrics-container {
+    width: 100%;
+    max-width: 600px; /* Constrain width for better reading */
+    margin-top: 2rem;
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== THE CARD UI ===== */
+.lyrics-card {
+    background: rgba(30, 41, 59, 0.6); /* Glass dark */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    overflow: hidden; /* Keeps children inside rounded corners */
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== HEADER SECTION ===== */
+.lyrics-header {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.song-info h2 {
+    font-size: 1.4rem;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.artist-name {
+    color: #94a3b8; /* Muted text */
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ===== COPY BUTTON ===== */
+.copy-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #94a3b8;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    box-shadow: none; /* Override generic button shadow */
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: #fff;
+    transform: translateY(0); /* Override generic button hover move */
+}
+
+/* ===== SCROLLABLE LYRICS AREA ===== */
+.lyrics-scroll-area {
+    /* Magic numbers for readable height */
+    max-height: 500px; 
+    overflow-y: auto; 
+    padding: 2rem;
+    
+    /* Smooth scroll behavior */
+    scroll-behavior: smooth;
+    
+    /* Custom Scrollbar for this specific box */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+
+/* Webkit scrollbar styling (Chrome/Safari) */
+.lyrics-scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+.lyrics-scroll-area::-webkit-scrollbar-thumb {
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 10px;
+}
+
+.lyrics-scroll-area pre {
+    white-space: pre-wrap; /* Crucial for API lyrics */
+    font-family: 'Inter', sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #e2e8f0;
+    text-align: center;
+}
+
+/* ===== ERROR BOX ===== */
+.status-box.error {
+    background: rgba(220, 38, 38, 0.2);
+    border: 1px solid rgba(220, 38, 38, 0.5);
+    color: #fca5a5;
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
 }

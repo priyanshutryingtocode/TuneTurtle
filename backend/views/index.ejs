@@ -16,11 +16,54 @@
             <button type="submit">Get Lyrics</button>
         </form>
 
-        <!-- Lyrics output section -->
-        <div class="lyrics-box">
-            <h2>Lyrics</h2>
-            <pre>Your lyrics will appear here...</pre>
-        </div>
+       <% if (locals.lyrics || locals.error) { %>
+    
+    <div class="lyrics-container">
+        
+        <% if (locals.error) { %>
+            <div class="status-box error">
+                <h3>⚠️ system_alert</h3>
+                <p><%= error %></p>
+            </div>
+        <% } %>
+
+        <% if (locals.lyrics) { %>
+            <div class="lyrics-card">
+                <div class="lyrics-header">
+                    <div class="song-info">
+                        <h2><%= locals.song || 'Track Found' %></h2>
+                        <span class="artist-name"><%= locals.artist || 'Unknown Artist' %></span>
+                    </div>
+                    
+                    <button class="copy-btn" onclick="copyLyrics()" title="Copy to clipboard">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="lyrics-scroll-area">
+                    <pre id="lyrics-text"><%= lyrics %></pre>
+                </div>
+            </div>
+        <% } %>
+        
+    </div>
+<% } %>
+
+<script>
+    function copyLyrics() {
+        const text = document.getElementById('lyrics-text').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.innerHTML = '✓ Copied!'; // Visual feedback
+            setTimeout(() => {
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+            }, 2000);
+        });
+    }
+</script>
     </div>
 </body>
 
