@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Inter:wght@400;600&display=swap');
+
+:root {
+    /* A palette of deep blues and soft purples */
+    --bg-dark: #0f172a;
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --input-bg: rgba(15, 23, 42, 0.6);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-dark);
+    overflow-x: hidden;
+}
+
+/* ===== BACKGROUND AMBIENCE ===== */
+/* Replacing the grid with a soft, moving gradient glow */
+.grid-bg {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15), transparent 60%);
+    z-index: -1;
+    animation: pulseGlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* ===== APP LAYOUT ===== */
+.app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+/* ===== TYPOGRAPHY ===== */
+.logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #fff, #a5b4fc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.5rem;
+    letter-spacing: -1px;
+    animation: none; /* Removed the flickering */
+}
+
+.tagline {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
+/* ===== GLASS CARD FORM ===== */
+form {
+    background: var(--glass-bg);
+    padding: 3rem;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 24px;
+    /* The Glassmorphism Magic */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+        0 2px 4px -1px rgba(0, 0, 0, 0.06),
+        0 20px 40px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: floatUp 0.8s ease-out;
+}
+
+@keyframes floatUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== INPUTS ===== */
+input {
+    background: var(--input-bg);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: #fff;
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+input::placeholder {
+    color: #475569;
+}
+
+input:focus {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: #6366f1; /* Indigo accent */
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+/* ===== BUTTON ===== */
+button {
+    background: var(--accent-gradient);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* ===== LYRICS BOX ===== */
+.lyrics-box {
+    margin-top: 1rem;
+    width: 100%;
+    max-width: 650px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    text-align: center; /* Center lyrics for a cleaner look */
+}
+
+.lyrics-box h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.lyrics-box pre {
+    white-space: pre-wrap;
+    font-family: 'Inter', sans-serif; /* Clean reading font */
+    color: var(--text-muted);
+    line-height: 1.8;
+    font-size: 1.1rem;
+    text-shadow: none;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+    .app { padding: 1rem; }
+    form { padding: 2rem; }
+    .logo { font-size: 2rem; }
+}

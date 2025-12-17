@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>TuneTurtle</title>   
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <div class="app">
+        <h1 class="logo">TuneTurtle</h1>
+        <p class="tagline">Get lyrics for any song</p>
+
+        <form action="/get-lyrics" method="POST">
+            <input type="text" name="artist" placeholder="Artist Name" required>
+            <input type="text" name="song" placeholder="Song Title" required>
+            <button type="submit">Get Lyrics</button>
+        </form>
+
+        <!-- Lyrics output section -->
+        <div class="lyrics-box">
+            <h2>Lyrics</h2>
+            <pre>Your lyrics will appear here...</pre>
+        </div>
+    </div>
+</body>
+
+</html>
