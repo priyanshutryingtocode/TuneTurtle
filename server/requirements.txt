@@ -1,0 +1,6 @@
+express
+mongoose
+cors
+axios
+sentiment
+dotenv
