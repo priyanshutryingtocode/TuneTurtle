@@ -1,42 +1,314 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* =========================================
+   1. RESET & VARIABLES
+   ========================================= */
+:root {
+  --bg-dark: #050505;
+  --text-main: #ffffff;
+  --text-muted: #a1a1aa;
+  
+  /* Modern Glass Variables */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  
+  --accent-color: #8b5cf6; /* Violet */
+  --accent-glow: rgba(139, 92, 246, 0.5);
+  
+  --radius-lg: 24px;
+  --radius-pill: 100px;
+}
+
+* { box-sizing: border-box; }
+
+/* FIX: Ensure the root container fills the screen */
+html, body, #root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* =========================================
+   2. AMBIENT BACKGROUND
+   ========================================= */
+.ambient-background {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  /* Deep blur for that abstract "Apple Music" look */
+  filter: blur(120px) brightness(0.4) saturate(1.4);
+  z-index: -1;
+  transition: background-image 1.2s ease-in-out;
+  opacity: 0.7; 
+}
+
+/* =========================================
+   3. MAIN LAYOUT (The Centering Fix)
+   ========================================= */
+.app-container {
+  width: 100%;
+  max-width: 1100px; /* Constrain width for large screens */
+  min-height: 100vh;
+  margin: 0 auto;    /* <--- This centers the container horizontally */
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* <--- This centers all children (Search, Grid) vertically */
+}
+
+/* =========================================
+   4. HEADER & HERO SECTION
+   ========================================= */
+.navbar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.8;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.search-container {
+  display: flex;
+  flex-direction: column; /* Stack Title above Search Bar */
+  align-items: center;    /* Center them */
+  gap: 30px;
+  margin: 40px 0 60px;    /* Spacing around the hero area */
+  width: 100%;
+}
+
+.search-container h1 {
+  font-size: 4rem; /* Big, bold title */
+  font-weight: 800;
+  letter-spacing: -2px;
+  text-align: center;
+  background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* Capsule Search Bar */
+.search-box {
+  display: flex;
+  width: 100%;
+  max-width: 580px; /* Perfect width for search */
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  padding: 8px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+  transform: scale(1.02);
+  border-color: var(--accent-color);
+  box-shadow: 0 20px 50px -10px var(--accent-glow);
+}
+
+.search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 0 24px;
+  font-size: 1.1rem;
+  outline: none;
+}
+
+/* Divider line between Artist and Song inputs */
+.search-box input:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-box button {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-color);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.search-box button:hover { transform: scale(1.05); }
+
+/* =========================================
+   5. DASHBOARD GRID (Results)
+   ========================================= */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 350px 1fr; /* Fixed Left, Fluid Right */
+  gap: 30px;
+  width: 100%;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   6. GLASS CARDS
+   ========================================= */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* --- Left Column: Album & Stats --- */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.album-card {
+  padding: 24px;
+  text-align: center;
+}
+
+.album-art {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  margin-bottom: 24px;
+  transition: transform 0.4s ease;
+}
+.album-art:hover { transform: scale(1.02); }
+
+.track-info h2 { font-size: 1.8rem; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+.track-info p { color: var(--text-muted); margin: 0; font-size: 1.1rem; }
+
+.analytics-card {
+  padding: 24px;
+  position: relative;
+}
+
+.score-label {
+  position: absolute;
+  top: 55%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.big-score { font-size: 2.5rem; font-weight: 800; display: block; line-height: 1; }
+.vibe-text { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 5px; }
+
+/* --- Right Column: Lyrics --- */
+.lyrics-card {
+  height: 100%;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.lyrics-header {
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.02);
+}
+
+.lyrics-header h3 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--text-muted); }
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 8px;
+}
+.badge.positive { background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2); }
+.badge.negative { background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
+
+.lyrics-scroller {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px 40px;
+  scroll-behavior: smooth;
+}
+.lyrics-scroller::-webkit-scrollbar { display: none; }
+
+.lyrics-text {
+  font-size: 1.25rem;
+  line-height: 2.4; /* Airy line height for readability */
+  color: #e4e4e7;
+  white-space: pre-wrap;
+  padding-bottom: 120px;
+}
+
+/* Fade Masks */
+.fade-mask-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 150px;
+  background: linear-gradient(to top, #050505 20%, transparent);
+  pointer-events: none;
+}
+
+/* =========================================
+   7. RESPONSIVE (Mobile)
+   ========================================= */
+@media (max-width: 900px) {
+  .search-container h1 { font-size: 2.5rem; }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* Stack vertically on phones */
+    gap: 40px;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .search-box {
+    flex-direction: column;
+    border-radius: 24px;
+    padding: 12px;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  
+  .search-box input {
+    padding: 15px;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+    text-align: center;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  
+  .search-box button {
+    width: 100%;
+    border-radius: 16px;
+    margin-top: 10px;
+  }
 }

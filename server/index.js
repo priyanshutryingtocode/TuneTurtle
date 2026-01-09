@@ -34,8 +34,17 @@ app.post("/api/analyze", async (req, res) => {
         // Pick the first result (most accurate)
         const firstSong = searches[0];
 
-        // 2. Fetch Lyrics (The library scrapes them for you)
-        const lyrics = await firstSong.lyrics();
+        // 2. Fetch Lyrics
+        let lyrics = await firstSong.lyrics();
+
+        if (!lyrics) throw new Error("Lyrics not found");
+
+        const firstHeaderIndex = lyrics.indexOf('[');
+
+        if (firstHeaderIndex > 0) 
+        {
+            lyrics = lyrics.substring(firstHeaderIndex);
+        }
 
         if (!lyrics) throw new Error("Lyrics not found");
 
