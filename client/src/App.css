@@ -67,23 +67,29 @@ body {
 /* =========================================
    4. HEADER & HERO SECTION
    ========================================= */
+/* Delete the old .logo styles and add this instead */
+
+.logo-img {
+  height: 300px;       /* Sets a fixed height */
+  width: auto;        /* Width adjusts automatically */
+  object-fit: contain;
+  opacity: 0.9;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+/* Update Navbar to ensure it handles the image well */
 .navbar {
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: center; /* Centers the logo */
+  padding-top: 20px;
   margin-bottom: 20px;
-}
-
-.logo {
-  font-weight: 700;
-  font-size: 0.9rem;
-  letter-spacing: 2px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  opacity: 0.8;
 }
 
 .search-container {

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'; // For Animations
 import { PieChart, Pie, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { Search, Music, AlertCircle, Sparkles } from 'lucide-react';
 import './App.css';
+import logo from './assets/logo.png';
 
 function App() {
   const [input, setInput] = useState({ artist: '', song: '' });
@@ -58,12 +59,8 @@ function App() {
 
       {/* Navbar */}
       <header className="navbar">
-        <div className="logo">
-          <Music className="icon" /> 
-          <span>TuneTurtle v2</span>
-        </div>
+  <     img src={logo} alt="TuneTurtle Logo" className="logo-img" />
       </header>
-
       {/* Search Section */}
       <div className="search-container">
         <motion.h1 
