@@ -20,7 +20,6 @@
 
 * { box-sizing: border-box; }
 
-/* FIX: Ensure the root container fills the screen */
 html, body, #root {
   width: 100%;
   min-height: 100vh;
@@ -43,7 +42,6 @@ body {
   top: 0; left: 0; width: 100%; height: 100%;
   background-size: cover;
   background-position: center;
-  /* Deep blur for that abstract "Apple Music" look */
   filter: blur(120px) brightness(0.4) saturate(1.4);
   z-index: -1;
   transition: background-image 1.2s ease-in-out;
@@ -51,17 +49,17 @@ body {
 }
 
 /* =========================================
-   3. MAIN LAYOUT (The Centering Fix)
+   3. MAIN LAYOUT
    ========================================= */
 .app-container {
   width: 100%;
-  max-width: 1100px; /* Constrain width for large screens */
+  max-width: 1100px;
   min-height: 100vh;
-  margin: 0 auto;    /* <--- This centers the container horizontally */
+  margin: 0 auto;
   padding: 40px 20px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* <--- This centers all children (Search, Grid) vertically */
+  align-items: center;
 }
 
 /* =========================================
@@ -69,7 +67,7 @@ body {
    ========================================= */
 
 .logo-img {
-  height: 300px;       /* Adjusted to reasonable height */
+  height: 275px;      
   width: auto;        
   object-fit: contain;
   opacity: 0.9;
@@ -94,75 +92,122 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
-  margin: 40px 0 60px;
+  gap: 10px; /* Reduced gap since subtitle is there */
+  margin: 0 0 40px;
   width: 100%;
 }
 
+/* --- NEW TYPOGRAPHY --- */
 .search-container h1 {
-  font-size: 4rem;
+  font-size: 4.5rem;
   font-weight: 800;
   letter-spacing: -2px;
   text-align: center;
-  background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+  
+  /* Gradient Text Setup */
+  background: linear-gradient(to bottom right, #ffffff 30%, #a5b4fc 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  
   margin: 0;
-  line-height: 1.1;
+  
+  /* Layout Fixes */
+  line-height: 1.3;     /* Gives room for 'y' and 'g' */
+  padding-bottom: 10px; /* Extra safety space */
+  
+  /* ERROR FIXED HERE: Use 'filter' instead of just 'drop-shadow' */
+  filter: drop-shadow(0 0 40px rgba(139, 92, 246, 0.3));
 }
 
-/* Capsule Search Bar */
+.subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-bottom: 40px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+/* --- THE GLOWING SEARCH BAR --- */
 .search-box {
   display: flex;
+  align-items: center;
   width: 100%;
-  max-width: 580px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-pill);
-  padding: 8px;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease;
+  max-width: 650px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 100px;
+  padding: 8px 8px 8px 24px;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .search-box:focus-within {
   transform: scale(1.02);
-  border-color: var(--accent-color);
-  box-shadow: 0 20px 50px -10px var(--accent-glow);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), 0 20px 50px -10px rgba(139, 92, 246, 0.4);
+}
+
+/* Input Groups */
+.input-group {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 12px;
+}
+
+.input-icon {
+  color: #525252;
+  transition: color 0.2s;
+}
+
+.search-box:focus-within .input-icon {
+  color: #a5b4fc;
 }
 
 .search-box input {
-  flex: 1;
   background: transparent;
   border: none;
   color: white;
-  padding: 0 24px;
   font-size: 1.1rem;
   outline: none;
+  width: 100%;
+  padding: 10px 0;
 }
 
-.search-box input:first-child {
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+.search-box input::placeholder {
+  color: #525252;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 15px;
 }
 
 .search-box button {
-  width: 54px; height: 54px;
+  width: 56px; height: 56px;
   border-radius: 50%;
   border: none;
-  background: var(--accent-color);
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
   color: white;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
   flex-shrink: 0;
 }
 
-.search-box button:hover { transform: scale(1.05); }
+.search-box button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+}
 
 /* =========================================
-   5. DASHBOARD GRID (Results)
+   5. DASHBOARD GRID
    ========================================= */
 .dashboard-grid {
   display: grid;
@@ -178,7 +223,7 @@ body {
 }
 
 /* =========================================
-   6. GLASS CARDS
+   6. GLASS CARDS & PANELS
    ========================================= */
 .glass-panel {
   background: var(--glass-bg);
@@ -190,7 +235,7 @@ body {
   overflow: hidden;
 }
 
-/* --- Left Column: Album & Stats --- */
+/* Left Panel */
 .left-panel {
   display: flex;
   flex-direction: column;
@@ -215,25 +260,26 @@ body {
 .track-info h2 { font-size: 1.8rem; margin: 0 0 8px 0; letter-spacing: -0.5px; }
 .track-info p { color: var(--text-muted); margin: 0; font-size: 1.1rem; }
 
+/* Analytics Card */
 .analytics-card {
   padding: 24px;
   position: relative;
 }
 
+/* Chart Wrapper (FIXED POSITIONING) */
 .chart-wrapper {
-  position: relative; /* This traps the absolute elements inside it */
-  height: 160px;      /* Reserve specific height for the chart */
-  margin-bottom: 20px; /* Push the text paragraph down so it doesn't touch */
+  position: relative;
+  height: 160px;
+  margin-bottom: 20px;
   display: flex;
   justify-content: center;
 }
 
 .score-label {
   position: absolute;
-  /* Position it relative to the .chart-wrapper, not the whole card */
   bottom: 0; 
   left: 50%;
-  transform: translateX(-50%); /* Center horizontally */
+  transform: translateX(-50%);
   text-align: center;
   width: 100%;
 }
@@ -243,7 +289,7 @@ body {
   font-weight: 800; 
   line-height: 1; 
   display: block;
-  text-shadow: 0 4px 12px rgba(0,0,0,0.5); /* Adds contrast */
+  text-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .vibe-text { 
@@ -255,7 +301,7 @@ body {
   display: block;
 }
 
-/* --- NEW: Meaning & Themes Styling --- */
+/* Meaning Box */
 .analysis-content {
   margin-top: 20px;
   display: flex;
@@ -303,7 +349,7 @@ body {
   border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
-/* --- Right Column: Lyrics --- */
+/* Right Panel: Lyrics */
 .lyrics-card {
   height: 100%;
   min-height: 600px;
@@ -347,7 +393,7 @@ body {
 }
 
 /* =========================================
-   7. RESPONSIVE (Mobile)
+   7. RESPONSIVE
    ========================================= */
 @media (max-width: 900px) {
   .search-container h1 { font-size: 2.5rem; }
@@ -361,14 +407,19 @@ body {
     flex-direction: column;
     border-radius: 24px;
     padding: 12px;
+    align-items: stretch;
   }
   
+  .input-group {
+    width: 100%;
+  }
+
   .search-box input {
     padding: 15px;
-    border-right: none;
-    border-bottom: 1px solid var(--glass-border);
     text-align: center;
   }
+
+  .divider { display: none; } /* Hide divider on mobile */
   
   .search-box button {
     width: 100%;

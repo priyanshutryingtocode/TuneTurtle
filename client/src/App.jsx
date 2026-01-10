@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PieChart, Pie, ResponsiveContainer } from 'recharts';
-import { Search, AlertCircle, Sparkles } from 'lucide-react';
+import { Search, AlertCircle, Sparkles, User, Disc } from 'lucide-react';
 import './App.css';
 import logo from './assets/logo.png';
 
@@ -42,42 +42,70 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* 1. DYNAMIC BACKGROUND LAYER */}
       <div 
         className="ambient-background" 
         style={{ backgroundImage: data ? `url(${data.track.image})` : 'none' }}
       />
       <div className="overlay-gradient"></div>
 
+      {/* Navbar */}
       <header className="navbar">
         <img src={logo} alt="TuneTurtle Logo" className="logo-img" />
       </header>
 
+      {/* Search Section */}
       <div className="search-container">
         <motion.h1 
           initial={{ opacity: 0, y: -20 }} 
           animate={{ opacity: 1, y: 0 }}
         >
-          Analyze the Vibe
+          Analyze any Song
         </motion.h1>
+
+        {/* New Subtitle */}
+        <motion.p 
+          className="subtitle"
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          Discover the hidden meaning behind your favorite tracks.
+        </motion.p>
         
         <form onSubmit={analyzeSong} className="search-box glass">
-          <input 
-            placeholder="Artist Name" 
-            value={input.artist}
-            onChange={(e) => setInput({...input, artist: e.target.value})} 
-          />
-          <input 
-            placeholder="Song Title" 
-            value={input.song}
-            onChange={(e) => setInput({...input, song: e.target.value})} 
-          />
+          
+          {/* ARTIST INPUT GROUP */}
+          <div className="input-group">
+            <User size={18} className="input-icon" />
+            <input 
+              placeholder="Artist Name" 
+              value={input.artist}
+              onChange={(e) => setInput({...input, artist: e.target.value})} 
+            />
+          </div>
+
+          <div className="divider"></div>
+
+          {/* SONG INPUT GROUP */}
+          <div className="input-group">
+            <Disc size={18} className="input-icon" />
+            <input 
+              placeholder="Song Title" 
+              value={input.song}
+              onChange={(e) => setInput({...input, song: e.target.value})} 
+            />
+          </div>
+
           <button disabled={loading}>
             {loading ? <div className="spinner"></div> : <Search size={20} />}
           </button>
         </form>
+        
         {error && <div className="error-msg"><AlertCircle size={16}/> {error}</div>}
       </div>
 
+      {/* Main Dashboard Grid */}
       <AnimatePresence>
         {data && (
           <motion.div 
@@ -87,6 +115,7 @@ function App() {
             transition={{ duration: 0.5 }}
           >
             
+            {/* LEFT COLUMN: Metadata & Analytics */}
             <div className="left-panel">
               <div className="card album-card glass-panel">
                 <img src={data.track.image} alt="Album Art" className="album-art" />
@@ -102,6 +131,7 @@ function App() {
                   <h3>AI Vibe Check</h3>
                 </div>
                 
+                {/* Chart Section */}
                 <div className="chart-wrapper">
                   <ResponsiveContainer width="100%" height={150}>
                     <PieChart>
@@ -123,6 +153,7 @@ function App() {
                   </div>
                 </div>
 
+                {/* Meaning Section */}
                 <div className="analysis-content">
                   <div className="meaning-box">
                     <h4>What does this song mean?</h4>
@@ -138,6 +169,7 @@ function App() {
               </div>
             </div>
 
+            {/* RIGHT COLUMN: Lyrics with "Mask" Effect */}
             <div className="right-panel">
               <div className="card lyrics-card glass-panel">
                 <div className="lyrics-header">
@@ -148,6 +180,7 @@ function App() {
                    <pre className="lyrics-text">{data.lyrics}</pre>
                 </div>
                 
+                {/* Fade masks for cool scrolling effect */}
                 <div className="fade-mask-bottom"></div>
               </div>
             </div>
