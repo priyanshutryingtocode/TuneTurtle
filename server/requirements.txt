@@ -2,5 +2,5 @@ express
 mongoose
 cors
 axios
-sentiment
 dotenv
+google-generative-ai

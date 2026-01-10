@@ -67,11 +67,10 @@ body {
 /* =========================================
    4. HEADER & HERO SECTION
    ========================================= */
-/* Delete the old .logo styles and add this instead */
 
 .logo-img {
-  height: 300px;       /* Sets a fixed height */
-  width: auto;        /* Width adjusts automatically */
+  height: 300px;       /* Adjusted to reasonable height */
+  width: auto;        
   object-fit: contain;
   opacity: 0.9;
   transition: transform 0.3s ease;
@@ -83,26 +82,25 @@ body {
   opacity: 1;
 }
 
-/* Update Navbar to ensure it handles the image well */
 .navbar {
   width: 100%;
   display: flex;
-  justify-content: center; /* Centers the logo */
+  justify-content: center;
   padding-top: 20px;
   margin-bottom: 20px;
 }
 
 .search-container {
   display: flex;
-  flex-direction: column; /* Stack Title above Search Bar */
-  align-items: center;    /* Center them */
+  flex-direction: column;
+  align-items: center;
   gap: 30px;
-  margin: 40px 0 60px;    /* Spacing around the hero area */
+  margin: 40px 0 60px;
   width: 100%;
 }
 
 .search-container h1 {
-  font-size: 4rem; /* Big, bold title */
+  font-size: 4rem;
   font-weight: 800;
   letter-spacing: -2px;
   text-align: center;
@@ -118,7 +116,7 @@ body {
 .search-box {
   display: flex;
   width: 100%;
-  max-width: 580px; /* Perfect width for search */
+  max-width: 580px;
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -145,7 +143,6 @@ body {
   outline: none;
 }
 
-/* Divider line between Artist and Song inputs */
 .search-box input:first-child {
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -169,7 +166,7 @@ body {
    ========================================= */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 350px 1fr; /* Fixed Left, Fluid Right */
+  grid-template-columns: 350px 1fr;
   gap: 30px;
   width: 100%;
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -223,14 +220,88 @@ body {
   position: relative;
 }
 
+.chart-wrapper {
+  position: relative; /* This traps the absolute elements inside it */
+  height: 160px;      /* Reserve specific height for the chart */
+  margin-bottom: 20px; /* Push the text paragraph down so it doesn't touch */
+  display: flex;
+  justify-content: center;
+}
+
 .score-label {
   position: absolute;
-  top: 55%; left: 50%;
-  transform: translate(-50%, -50%);
+  /* Position it relative to the .chart-wrapper, not the whole card */
+  bottom: 0; 
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
   text-align: center;
+  width: 100%;
 }
-.big-score { font-size: 2.5rem; font-weight: 800; display: block; line-height: 1; }
-.vibe-text { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 5px; }
+
+.big-score { 
+  font-size: 3rem; 
+  font-weight: 800; 
+  line-height: 1; 
+  display: block;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.5); /* Adds contrast */
+}
+
+.vibe-text { 
+  font-size: 0.9rem; 
+  text-transform: uppercase; 
+  letter-spacing: 2px; 
+  color: var(--text-muted); 
+  margin-top: 5px; 
+  display: block;
+}
+
+/* --- NEW: Meaning & Themes Styling --- */
+.analysis-content {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.meaning-box {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.meaning-box h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meaning-box p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #e4e4e7;
+  font-style: italic;
+}
+
+.themes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.theme-tag {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
 
 /* --- Right Column: Lyrics --- */
 .lyrics-card {
@@ -252,18 +323,6 @@ body {
 
 .lyrics-header h3 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--text-muted); }
 
-.badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-left: 8px;
-}
-.badge.positive { background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2); }
-.badge.negative { background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
-
 .lyrics-scroller {
   flex: 1;
   overflow-y: auto;
@@ -274,13 +333,12 @@ body {
 
 .lyrics-text {
   font-size: 1.25rem;
-  line-height: 2.4; /* Airy line height for readability */
+  line-height: 2.4; 
   color: #e4e4e7;
   white-space: pre-wrap;
   padding-bottom: 120px;
 }
 
-/* Fade Masks */
 .fade-mask-bottom {
   position: absolute;
   bottom: 0; left: 0; right: 0; height: 150px;
@@ -295,7 +353,7 @@ body {
   .search-container h1 { font-size: 2.5rem; }
   
   .dashboard-grid {
-    grid-template-columns: 1fr; /* Stack vertically on phones */
+    grid-template-columns: 1fr;
     gap: 40px;
   }
   

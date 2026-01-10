@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion'; // For Animations
-import { PieChart, Pie, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
-import { Search, Music, AlertCircle, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PieChart, Pie, ResponsiveContainer } from 'recharts';
+import { Search, AlertCircle, Sparkles } from 'lucide-react';
 import './App.css';
 import logo from './assets/logo.png';
 
@@ -28,14 +28,6 @@ function App() {
     }
   };
 
-  const getChartData = () => {
-    if (!data) return [];
-    return [
-      { name: 'Positive', value: data.analysis.positive_words.length, fill: '#4ade80' },
-      { name: 'Negative', value: data.analysis.negative_words.length, fill: '#f87171' },
-    ];
-  };
-
   const getScorePercentage = () => {
     if (!data) return 50;
     const rawScore = data.analysis.score;
@@ -50,18 +42,16 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* 1. DYNAMIC BACKGROUND LAYER */}
       <div 
         className="ambient-background" 
         style={{ backgroundImage: data ? `url(${data.track.image})` : 'none' }}
       />
       <div className="overlay-gradient"></div>
 
-      {/* Navbar */}
       <header className="navbar">
-  <     img src={logo} alt="TuneTurtle Logo" className="logo-img" />
+        <img src={logo} alt="TuneTurtle Logo" className="logo-img" />
       </header>
-      {/* Search Section */}
+
       <div className="search-container">
         <motion.h1 
           initial={{ opacity: 0, y: -20 }} 
@@ -88,7 +78,6 @@ function App() {
         {error && <div className="error-msg"><AlertCircle size={16}/> {error}</div>}
       </div>
 
-      {/* Main Dashboard Grid */}
       <AnimatePresence>
         {data && (
           <motion.div 
@@ -98,7 +87,6 @@ function App() {
             transition={{ duration: 0.5 }}
           >
             
-            {/* LEFT COLUMN: Metadata & Analytics */}
             <div className="left-panel">
               <div className="card album-card glass-panel">
                 <img src={data.track.image} alt="Album Art" className="album-art" />
@@ -135,37 +123,31 @@ function App() {
                   </div>
                 </div>
 
-                <div className="word-stat">
-                  <h4>Sentiment Balance</h4>
-                  <ResponsiveContainer width="100%" height={60}>
-                      <BarChart layout="vertical" data={getChartData()}>
-                          <XAxis type="number" hide />
-                          <YAxis type="category" dataKey="name" width={60} style={{ fill: '#eee', fontSize: '12px' }}/>
-                          <Tooltip cursor={{fill: 'transparent'}} contentStyle={{backgroundColor: '#333', border: 'none'}}/>
-                          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={12} />
-                      </BarChart>
-                  </ResponsiveContainer>
+                <div className="analysis-content">
+                  <div className="meaning-box">
+                    <h4>What does this song mean?</h4>
+                    <p>"{data.analysis.meaning}"</p>
+                  </div>
+
+                  <div className="themes-list">
+                    {data.analysis.themes?.map((theme, i) => (
+                      <span key={i} className="theme-tag">#{theme}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* RIGHT COLUMN: Lyrics with "Mask" Effect */}
             <div className="right-panel">
               <div className="card lyrics-card glass-panel">
                 <div className="lyrics-header">
                   <h3>Lyrics</h3>
-                  <div className="badge-container">
-                      <span className="badge positive">{data.analysis.positive_words.length} Positive</span>
-                      <span className="badge negative">{data.analysis.negative_words.length} Negative</span>
-                  </div>
                 </div>
                 
                 <div className="lyrics-scroller">
                    <pre className="lyrics-text">{data.lyrics}</pre>
                 </div>
                 
-                {/* Fade masks for cool scrolling effect */}
-                <div className="fade-mask-top"></div>
                 <div className="fade-mask-bottom"></div>
               </div>
             </div>
