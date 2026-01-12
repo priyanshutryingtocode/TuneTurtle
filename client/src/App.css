@@ -427,3 +427,171 @@ body {
     margin-top: 10px;
   }
 }
+
+/* --- RECOMMENDATIONS SECTION --- */
+.recommendations-section {
+  margin-top: 10px;
+}
+
+.recommendations-section h4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  margin-left: 5px;
+}
+
+.rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rec-card {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rec-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(5px); /* Slide slightly right on hover */
+  border-color: var(--accent-color);
+}
+
+.rec-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  color: var(--text-muted);
+}
+
+.rec-card:hover .rec-icon {
+  background: var(--accent-color);
+  color: white;
+}
+
+.rec-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.rec-song {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: white;
+}
+
+.rec-artist {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* --- TRACK DETAILS CARD --- */
+.details-card {
+  padding: 20px;
+  margin-top: 20px; /* Space between analytics card and details */
+}
+
+.details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-icon {
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.05);
+  padding: 8px; /* Slightly larger padding for look */
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+}
+
+.detail-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-info .label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-info .value {
+  font-size: 0.95rem;
+  color: white;
+  font-weight: 500;
+}
+
+.divider-horizontal {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 20px 0;
+  width: 100%;
+}
+
+/* Links Row */
+.links-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* Update the .link-btn class and add .genius-btn */
+
+.link-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Specific styling for Genius button */
+.genius-btn {
+  background: #ffff64; /* Genius Yellow */
+  color: black;
+  box-shadow: 0 4px 15px rgba(255, 255, 100, 0.2);
+}
+
+.genius-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 255, 100, 0.4);
+}
+
+/* Ensure icons in the details list look good */
+.detail-icon {
+  color: #a5b4fc; /* Tint the icons purple */
+  background: rgba(165, 180, 252, 0.1);
+  padding: 8px;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}

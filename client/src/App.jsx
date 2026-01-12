@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PieChart, Pie, ResponsiveContainer } from 'recharts';
-import { Search, AlertCircle, Sparkles, User, Disc } from 'lucide-react';
+import { Search, AlertCircle, Sparkles, User, Disc, Calendar, Mic2, ExternalLink } from 'lucide-react';
 import './App.css';
 import logo from './assets/logo.png';
 
@@ -12,23 +12,43 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const analyzeSong = async (e) => {
+  const handleSearch = (e) => 
+  {
     e.preventDefault();
+    fetchAnalysis(input.artist, input.song);
+  };
+
+  const fetchAnalysis = async (artist, song) => 
+  {
     setLoading(true);
     setError(null);
     setData(null);
-    
-    try {
-      const res = await axios.post('http://localhost:5000/api/analyze', input);
+    setInput({ artist, song }); 
+
+    try 
+    {
+      const res = await axios.post('http://localhost:5000/api/analyze', { artist, song });
       setData(res.data);
-    } catch (err) {
+    } catch (err) 
+    {
       setError("Could not analyze song. Please check spelling.");
-    } finally {
+    } finally 
+    {
       setLoading(false);
     }
   };
 
-  const getScorePercentage = () => {
+  const getThemeClass = () => 
+  {
+    if (!data) return ""; 
+    const score = data.analysis.score;
+    if (score >= 4) return "theme-happy";
+    if (score <= -4) return "theme-sad";
+    return ""; 
+  };
+
+  const getScorePercentage = () => 
+  {
     if (!data) return 50;
     const rawScore = data.analysis.score;
     const clamped = Math.max(-10, Math.min(10, rawScore)); 
@@ -41,20 +61,17 @@ function App() {
   ] : [];
 
   return (
-    <div className="app-container">
-      {/* 1. DYNAMIC BACKGROUND LAYER */}
+    <div className={`app-container ${getThemeClass()}`}>
       <div 
         className="ambient-background" 
         style={{ backgroundImage: data ? `url(${data.track.image})` : 'none' }}
       />
       <div className="overlay-gradient"></div>
 
-      {/* Navbar */}
       <header className="navbar">
         <img src={logo} alt="TuneTurtle Logo" className="logo-img" />
       </header>
 
-      {/* Search Section */}
       <div className="search-container">
         <motion.h1 
           initial={{ opacity: 0, y: -20 }} 
@@ -63,7 +80,6 @@ function App() {
           Analyze any Song
         </motion.h1>
 
-        {/* New Subtitle */}
         <motion.p 
           className="subtitle"
           initial={{ opacity: 0 }} 
@@ -73,9 +89,7 @@ function App() {
           Discover the hidden meaning behind your favorite tracks.
         </motion.p>
         
-        <form onSubmit={analyzeSong} className="search-box glass">
-          
-          {/* ARTIST INPUT GROUP */}
+        <form onSubmit={handleSearch} className="search-box glass">
           <div className="input-group">
             <User size={18} className="input-icon" />
             <input 
@@ -87,7 +101,6 @@ function App() {
 
           <div className="divider"></div>
 
-          {/* SONG INPUT GROUP */}
           <div className="input-group">
             <Disc size={18} className="input-icon" />
             <input 
@@ -105,7 +118,6 @@ function App() {
         {error && <div className="error-msg"><AlertCircle size={16}/> {error}</div>}
       </div>
 
-      {/* Main Dashboard Grid */}
       <AnimatePresence>
         {data && (
           <motion.div 
@@ -115,7 +127,6 @@ function App() {
             transition={{ duration: 0.5 }}
           >
             
-            {/* LEFT COLUMN: Metadata & Analytics */}
             <div className="left-panel">
               <div className="card album-card glass-panel">
                 <img src={data.track.image} alt="Album Art" className="album-art" />
@@ -131,7 +142,6 @@ function App() {
                   <h3>AI Vibe Check</h3>
                 </div>
                 
-                {/* Chart Section */}
                 <div className="chart-wrapper">
                   <ResponsiveContainer width="100%" height={150}>
                     <PieChart>
@@ -153,7 +163,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* Meaning Section */}
                 <div className="analysis-content">
                   <div className="meaning-box">
                     <h4>What does this song mean?</h4>
@@ -166,10 +175,81 @@ function App() {
                     ))}
                   </div>
                 </div>
+
+                {data.analysis.recommendations && (
+                  <div className="recommendations-section">
+                    <h4>Similar Vibe</h4>
+                    <div className="rec-list">
+                      {data.analysis.recommendations
+                        .filter(rec => rec.song.toLowerCase() !== data.track.song.toLowerCase())
+                        .map((rec, i) => (
+                          <div 
+                            key={i} 
+                            className="rec-card glass-panel"
+                            onClick={() => fetchAnalysis(rec.artist, rec.song)}
+                          >
+                            <div className="rec-icon">
+                              <Disc size={16} />
+                            </div>
+                            <div className="rec-info">
+                              <span className="rec-song">{rec.song}</span>
+                              <span className="rec-artist">{rec.artist}</span>
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
+
+              <div className="card details-card glass-panel">
+                <div className="card-header">
+                   <Disc size={18} color="#a5b4fc" />
+                   <h3>Track Details</h3>
+                </div>
+
+                <div className="details-list">
+                  {data.track.releaseDate && (
+                    <div className="detail-row">
+                      <Calendar size={16} className="detail-icon" />
+                      <div className="detail-info">
+                        <span className="label">Released</span>
+                        <span className="value">{data.track.releaseDate}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {data.track.producers && data.track.producers.length > 0 && (
+                    <div className="detail-row">
+                      <Mic2 size={16} className="detail-icon" />
+                      <div className="detail-info">
+                        <span className="label">Produced By</span>
+                        <span className="value">{data.track.producers.join(', ')}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {!data.track.releaseDate && (!data.track.producers || data.track.producers.length === 0) && (
+                     <div className="detail-row">
+                        <div className="detail-info">
+                           <span className="label" style={{ opacity: 0.5 }}>No extra metadata found</span>
+                        </div>
+                     </div>
+                  )}
+                </div>
+
+                <div className="divider-horizontal"></div>
+
+                <div className="links-row">
+                  <a href={data.track.url} target="_blank" rel="noreferrer" className="link-btn genius-btn">
+                    <span>View on Genius</span>
+                    <ExternalLink size={16} />
+                  </a>
+                </div>
+              </div>
+
             </div>
 
-            {/* RIGHT COLUMN: Lyrics with "Mask" Effect */}
             <div className="right-panel">
               <div className="card lyrics-card glass-panel">
                 <div className="lyrics-header">
@@ -180,7 +260,6 @@ function App() {
                    <pre className="lyrics-text">{data.lyrics}</pre>
                 </div>
                 
-                {/* Fade masks for cool scrolling effect */}
                 <div className="fade-mask-bottom"></div>
               </div>
             </div>
