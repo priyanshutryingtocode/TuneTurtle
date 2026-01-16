@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PieChart, Pie, ResponsiveContainer } from 'recharts';
-import { Search, AlertCircle, Sparkles, User, Disc, Calendar, Mic2, ExternalLink } from 'lucide-react';
+import { Search, AlertCircle, Sparkles, User, Disc, Calendar, Mic2, ExternalLink, PenTool, Library} from 'lucide-react';
 import './App.css';
 import logo from './assets/logo.png';
 
@@ -11,6 +11,8 @@ function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  
 
   const handleSearch = (e) => 
   {
@@ -59,6 +61,22 @@ function App() {
     { name: 'Score', value: getScorePercentage(), fill: getScorePercentage() > 50 ? '#4ade80' : '#f87171' },
     { name: 'Gray', value: 100 - getScorePercentage(), fill: 'rgba(255,255,255,0.1)' }
   ] : [];
+
+  const formatDate = (isoString) => {
+    if (!isoString) return '';
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(isoString).toLocaleDateString('en-US', options);
+  };
+
+  const resultsRef = useRef(null);
+
+  useEffect(() => {
+    if (data && resultsRef.current) {
+      setTimeout(() => {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [data]);
 
   return (
     <div className={`app-container ${getThemeClass()}`}>
@@ -121,6 +139,7 @@ function App() {
       <AnimatePresence>
         {data && (
           <motion.div 
+            ref={resultsRef}
             className="dashboard-grid"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -209,12 +228,23 @@ function App() {
                 </div>
 
                 <div className="details-list">
+
+                  {data.track.album && (
+                    <div className="detail-row">
+                      <Library size={16} className="detail-icon" />
+                      <div className="detail-info">
+                        <span className="label">Album</span>
+                        <span className="value">{data.track.album}</span>
+                      </div>
+                    </div>
+                  )}
+
                   {data.track.releaseDate && (
                     <div className="detail-row">
                       <Calendar size={16} className="detail-icon" />
                       <div className="detail-info">
                         <span className="label">Released</span>
-                        <span className="value">{data.track.releaseDate}</span>
+                        <span className="value">{formatDate(data.track.releaseDate)}</span>
                       </div>
                     </div>
                   )}
@@ -229,7 +259,19 @@ function App() {
                     </div>
                   )}
 
-                  {!data.track.releaseDate && (!data.track.producers || data.track.producers.length === 0) && (
+                  {data.track.writers && data.track.writers.length > 0 && (
+                    <div className="detail-row">
+                      <PenTool size={16} className="detail-icon" />
+                      <div className="detail-info">
+                        <span className="label">Written By</span>
+                        <span className="value">{data.track.writers.slice(0, 3).join(', ')}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!data.track.releaseDate && 
+                   (!data.track.producers || data.track.producers.length === 0) && 
+                   (!data.track.writers || data.track.writers.length === 0) && (
                      <div className="detail-row">
                         <div className="detail-info">
                            <span className="label" style={{ opacity: 0.5 }}>No extra metadata found</span>

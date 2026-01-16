@@ -53,6 +53,19 @@ app.post("/api/analyze", async (req, res) =>
         }
         
         const firstSong = searches[0];
+
+        await firstSong.fetch();
+
+        const writers = (firstSong.writer_artists || []).map(p => p.name);
+        const producers = (firstSong.producer_artists || []).map(p => p.name).slice(0, 3);
+        const album = firstSong.album ? firstSong.album.name : null;
+
+        console.log(`\n🔎 Metadata Found:`);
+        console.log(`   - Date: ${firstSong.releasedAt}`);
+        console.log(`   - Album: ${album || 'None'}`);
+        console.log(`   - Producers: ${producers.length > 0 ? producers.join(', ') : 'None'}`);
+        console.log(`   - Writers: ${writers.length > 0 ? writers.join(', ') : 'None'}`);
+
         let lyrics = await firstSong.lyrics();
 
         lyrics = lyrics.replace(/^[0-9]+ Contributors.*Lyrics/, '');
@@ -60,7 +73,7 @@ app.post("/api/analyze", async (req, res) =>
         if (firstBracket !== -1) lyrics = lyrics.substring(firstBracket);
         lyrics = lyrics.trim();
 
-        const producers = (firstSong.producer_artists || []).map(p => p.name).slice(0, 3);
+        
 
         const prompt = `
         Analyze the following lyrics by ${artist}.
@@ -95,7 +108,9 @@ app.post("/api/analyze", async (req, res) =>
                 image: firstSong.image,
                 url: firstSong.url,
                 releaseDate: firstSong.releasedAt, 
-                producers: producers               
+                producers: producers,
+                writers: writers,
+                album: album               
             },
             lyrics: lyrics,
             analysis: aiData
