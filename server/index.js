@@ -44,7 +44,7 @@ app.post("/api/analyze", async (req, res) =>
     const { artist, song } = req.body;
     try 
     {
-        console.log(`\n🎵 Searching for: ${song} by ${artist}`);
+        console.log(`\nSearching for: ${song} by ${artist}`);
 
         const searches = await Client.songs.search(`${song} ${artist}`);
         if (!searches || searches.length === 0) 
@@ -66,34 +66,46 @@ app.post("/api/analyze", async (req, res) =>
         console.log(`   - Producers: ${producers.length > 0 ? producers.join(', ') : 'None'}`);
         console.log(`   - Writers: ${writers.length > 0 ? writers.join(', ') : 'None'}`);
 
+
         let lyrics = "";
         try 
         {
             lyrics = await firstSong.lyrics();
+            console.log("Lyrics fetched from Genius");
         } 
         catch (err) 
         {
-            console.log("Genius blocked the scrape (403). Falling back to Open API...");
+            console.log("Genius blocked the scrape (403). Switching to LRCLIB...");
             
-            try {
-
-                const cleanArtist = encodeURIComponent(artist);
-                const cleanSong = encodeURIComponent(song);
-                const fallbackRes = await fetch(`https://api.lyrics.ovh/v1/${cleanArtist}/${cleanSong}`);
+            try 
+            {
+                const cleanArtist = encodeURIComponent(firstSong.artist.name);
+                const cleanSong = encodeURIComponent(firstSong.title);
+                
+                const fallbackRes = await fetch(`https://lrclib.net/api/get?artist_name=${cleanArtist}&track_name=${cleanSong}`);
+                
+                if (!fallbackRes.ok) 
+                {
+                    throw new Error("Track not found on LRCLIB");
+                }
+                
                 const fallbackData = await fallbackRes.json();
                 
-                if (!fallbackData.lyrics)
+                if (!fallbackData.plainLyrics) 
                 {
-                    throw new Error("Not found in fallback");
+                    throw new Error("Track found, but no lyrics text available");
                 }
-
-                lyrics = fallbackData.lyrics;
                 
-            } catch (fallbackErr) {
+                lyrics = fallbackData.plainLyrics;
+                console.log("Lyrics successfully fetched from LRCLIB!");
+                
+            } catch (fallbackErr) 
+            {
+                console.error("Fallback also failed:", fallbackErr.message);
                 return res.status(500).json
                 ({ 
                     success: false, 
-                    error: "Cloudflare blocked the lyrics fetch. Please try a different song." 
+                    error: "Could not retrieve lyrics. Cloudflare blocked the primary source, and the fallback missed." 
                 });
             }
         }
