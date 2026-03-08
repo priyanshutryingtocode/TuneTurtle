@@ -66,7 +66,37 @@ app.post("/api/analyze", async (req, res) =>
         console.log(`   - Producers: ${producers.length > 0 ? producers.join(', ') : 'None'}`);
         console.log(`   - Writers: ${writers.length > 0 ? writers.join(', ') : 'None'}`);
 
-        let lyrics = await firstSong.lyrics();
+        let lyrics = "";
+        try 
+        {
+            lyrics = await firstSong.lyrics();
+        } 
+        catch (err) 
+        {
+            console.log("Genius blocked the scrape (403). Falling back to Open API...");
+            
+            try {
+
+                const cleanArtist = encodeURIComponent(artist);
+                const cleanSong = encodeURIComponent(song);
+                const fallbackRes = await fetch(`https://api.lyrics.ovh/v1/${cleanArtist}/${cleanSong}`);
+                const fallbackData = await fallbackRes.json();
+                
+                if (!fallbackData.lyrics)
+                {
+                    throw new Error("Not found in fallback");
+                }
+
+                lyrics = fallbackData.lyrics;
+                
+            } catch (fallbackErr) {
+                return res.status(500).json
+                ({ 
+                    success: false, 
+                    error: "Cloudflare blocked the lyrics fetch. Please try a different song." 
+                });
+            }
+        }
 
         lyrics = lyrics.replace(/^[0-9]+ Contributors.*Lyrics/, '');
         const firstBracket = lyrics.indexOf('[');
