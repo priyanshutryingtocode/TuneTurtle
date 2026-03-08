@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 const Client = new Genius.Client(process.env.GENIUS_TOKEN);
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
