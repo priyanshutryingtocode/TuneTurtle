@@ -22,7 +22,6 @@ TuneTurtle is a AI-powered lyrics analysis and music recommendation platform. By
 * **Node.js & Express** powering the API layer. 
 * **Gemini 2.5 Flash** (via `@google/generative-ai`) for high-speed AI analysis. 
 * **Genius-Lyrics** for primary song metadata and scraping. 
-* **Mongoose** for potential data persistence. 
 
 ## 📦 Installation
 
