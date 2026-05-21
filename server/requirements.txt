@@ -1,6 +1,0 @@
-express
-mongoose
-cors
-axios
-dotenv
-google-generative-ai

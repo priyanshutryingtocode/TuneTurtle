@@ -8,14 +8,107 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const REQUEST_TIMEOUT_MS = 12000;
+const MAX_INPUT_LENGTH = 120;
+const MAX_LYRICS_LENGTH = 3000;
 
 const Client = new Genius.Client(process.env.GENIUS_TOKEN);
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173"
+}));
+app.use(express.json({ limit: "64kb" }));
+
+function validateSongRequest(artist, song)
+{
+    const cleanArtist = typeof artist === "string" ? artist.trim() : "";
+    const cleanSong = typeof song === "string" ? song.trim() : "";
+
+    if (!cleanArtist || !cleanSong)
+    {
+        return { error: "Artist and song title are required." };
+    }
+
+    if (cleanArtist.length > MAX_INPUT_LENGTH || cleanSong.length > MAX_INPUT_LENGTH)
+    {
+        return { error: "Artist and song title must be shorter than 120 characters." };
+    }
+
+    return { artist: cleanArtist, song: cleanSong };
+}
+
+function withTimeout(promise, label, timeoutMs = REQUEST_TIMEOUT_MS)
+{
+    let timeoutId;
+    const timeout = new Promise((_, reject) =>
+    {
+        timeoutId = setTimeout(() =>
+        {
+            reject(new Error(`${label} timed out.`));
+        }, timeoutMs);
+    });
+
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId));
+}
+
+async function fetchJsonWithTimeout(url, label)
+{
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try
+    {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok)
+        {
+            throw new Error(`${label} returned ${response.status}.`);
+        }
+
+        return await response.json();
+    }
+    finally
+    {
+        clearTimeout(timeoutId);
+    }
+}
+
+function extractJsonObject(text)
+{
+    const cleanText = text.replace(/```json|```/g, "").trim();
+    const firstBrace = cleanText.indexOf("{");
+    const lastBrace = cleanText.lastIndexOf("}");
+
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace)
+    {
+        throw new Error("AI response did not include JSON.");
+    }
+
+    return cleanText.slice(firstBrace, lastBrace + 1);
+}
+
+function normalizeAnalysis(aiData)
+{
+    const recommendations = Array.isArray(aiData.recommendations)
+        ? aiData.recommendations.slice(0, 3).map((rec) => ({
+            song: String(rec.song || "").trim(),
+            artist: String(rec.artist || "").trim(),
+            reason: String(rec.reason || "").trim()
+        })).filter((rec) => rec.song && rec.artist)
+        : [];
+
+    return {
+        score: Math.max(-10, Math.min(10, Number(aiData.score) || 0)),
+        vibe: String(aiData.vibe || "Mixed mood").trim().slice(0, 60),
+        themes: Array.isArray(aiData.themes)
+            ? aiData.themes.slice(0, 3).map((theme) => String(theme).trim()).filter(Boolean)
+            : [],
+        meaning: String(aiData.meaning || "No meaning summary was generated.").trim(),
+        recommendations
+    };
+}
 
 async function generateWithRetry(prompt, retries = 3, delay = 2000) 
 {
@@ -41,12 +134,22 @@ async function generateWithRetry(prompt, retries = 3, delay = 2000)
 
 app.post("/api/analyze", async (req, res) =>
 {
-    const { artist, song } = req.body;
+    const requestData = validateSongRequest(req.body.artist, req.body.song);
+    if (requestData.error)
+    {
+        return res.status(400).json({ success: false, error: requestData.error });
+    }
+
+    const { artist, song } = requestData;
+
     try 
     {
         console.log(`\nSearching for: ${song} by ${artist}`);
 
-        const searches = await Client.songs.search(`${song} ${artist}`);
+        const searches = await withTimeout(
+            Client.songs.search(`${song} ${artist}`),
+            "Genius search"
+        );
         if (!searches || searches.length === 0) 
         {
             return res.status(404).json({ success: false, error: "Song not found." });
@@ -54,7 +157,7 @@ app.post("/api/analyze", async (req, res) =>
         
         const firstSong = searches[0];
 
-        await firstSong.fetch();
+        await withTimeout(firstSong.fetch(), "Genius metadata fetch");
 
         const writers = (firstSong.writer_artists || []).map(p => p.name);
         const producers = (firstSong.producer_artists || []).map(p => p.name).slice(0, 3);
@@ -70,26 +173,22 @@ app.post("/api/analyze", async (req, res) =>
         let lyrics = "";
         try 
         {
-            lyrics = await firstSong.lyrics();
+            lyrics = await withTimeout(firstSong.lyrics(), "Genius lyrics fetch");
             console.log("Lyrics fetched from Genius");
         } 
         catch (err) 
         {
-            console.log("Genius blocked the scrape (403). Switching to LRCLIB...");
+            console.log(`Genius lyrics failed (${err.message}). Switching to LRCLIB...`);
             
             try 
             {
                 const cleanArtist = encodeURIComponent(firstSong.artist.name);
                 const cleanSong = encodeURIComponent(firstSong.title);
                 
-                const fallbackRes = await fetch(`https://lrclib.net/api/get?artist_name=${cleanArtist}&track_name=${cleanSong}`);
-                
-                if (!fallbackRes.ok) 
-                {
-                    throw new Error("Track not found on LRCLIB");
-                }
-                
-                const fallbackData = await fallbackRes.json();
+                const fallbackData = await fetchJsonWithTimeout(
+                    `https://lrclib.net/api/get?artist_name=${cleanArtist}&track_name=${cleanSong}`,
+                    "LRCLIB"
+                );
                 
                 if (!fallbackData.plainLyrics) 
                 {
@@ -115,6 +214,10 @@ app.post("/api/analyze", async (req, res) =>
         if (firstBracket !== -1) lyrics = lyrics.substring(firstBracket);
         lyrics = lyrics.trim();
 
+        if (!lyrics)
+        {
+            return res.status(404).json({ success: false, error: "Lyrics were found but came back empty." });
+        }
         
 
         const prompt = `
@@ -133,13 +236,12 @@ app.post("/api/analyze", async (req, res) =>
         }
         
         Lyrics:
-        ${lyrics.substring(0, 3000)}
+        ${lyrics.substring(0, MAX_LYRICS_LENGTH)}
         `;
 
         const result = await generateWithRetry(prompt);
         const responseText = result.response.text();
-        const cleanJson = responseText.replace(/```json|```/g, '').trim();
-        const aiData = JSON.parse(cleanJson);
+        const aiData = normalizeAnalysis(JSON.parse(extractJsonObject(responseText)));
 
         res.json({
             success: true,

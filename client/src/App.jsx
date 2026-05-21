@@ -1,26 +1,71 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PieChart, Pie, ResponsiveContainer } from 'recharts';
-import { Search, AlertCircle, Sparkles, User, Disc, Calendar, Mic2, ExternalLink, PenTool, Library} from 'lucide-react';
+import {
+  Search,
+  AlertCircle,
+  Sparkles,
+  User,
+  Disc,
+  Calendar,
+  Mic2,
+  ExternalLink,
+  PenTool,
+  Library,
+  Clock,
+  Clipboard,
+  Check,
+  Share2,
+  Music2,
+  RotateCcw
+} from 'lucide-react';
 import './App.css';
 import logo from './assets/logo.png';
+
+const loadingMessages = [
+  'Searching the catalog...',
+  'Fetching lyrics...',
+  'Reading between the lines...',
+  'Finding similar vibes...'
+];
 
 function App() {
   const [input, setInput] = useState({ artist: '', song: '' });
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [copiedAction, setCopiedAction] = useState(null);
 
   const handleSearch = (e) => 
   {
     e.preventDefault();
-    fetchAnalysis(input.artist, input.song);
+    const artist = input.artist.trim();
+    const song = input.song.trim();
+
+    if (!artist || !song) {
+      setError('Please enter both an artist and a song title.');
+      return;
+    }
+
+    fetchAnalysis(artist, song);
   };
 
-  const fetchAnalysis = async (artist, song) => 
+  const rememberSearch = useCallback((artist, song) => {
+    const nextSearch = { artist, song };
+    const filtered = recentSearches.filter((item) => (
+      item.artist.toLowerCase() !== artist.toLowerCase()
+      || item.song.toLowerCase() !== song.toLowerCase()
+    ));
+    const nextSearches = [nextSearch, ...filtered].slice(0, 5);
+
+    setRecentSearches(nextSearches);
+    localStorage.setItem('tuneturtle:recent-searches', JSON.stringify(nextSearches));
+  }, [recentSearches]);
+
+  const fetchAnalysis = useCallback(async (artist, song) => 
   {
     setLoading(true);
     setError(null);
@@ -32,13 +77,27 @@ function App() {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const res = await axios.post(`${API_URL}/api/analyze`, { artist, song });
       setData(res.data);
+      rememberSearch(res.data.track.artist, res.data.track.song);
+
+      const params = new URLSearchParams({
+        artist: res.data.track.artist,
+        song: res.data.track.song
+      });
+      window.history.replaceState(null, '', `?${params.toString()}`);
     } catch (err) 
     {
-      setError("Could not analyze song. Please check spelling.");
+      setError(err.response?.data?.error || 'Could not analyze song. Please check spelling.');
     } finally 
     {
       setLoading(false);
     }
+  }, [rememberSearch]);
+
+  const resetSearch = () => {
+    setData(null);
+    setError(null);
+    setInput({ artist: '', song: '' });
+    window.history.replaceState(null, '', window.location.pathname);
   };
 
   const getThemeClass = () => 
@@ -58,6 +117,17 @@ function App() {
     return ((clamped + 10) / 20) * 100;
   };
 
+  const getMoodLabel = () => 
+  {
+    if (!data) return 'Balanced';
+    const score = data.analysis.score;
+    if (score >= 6) return 'Bright';
+    if (score >= 2) return 'Warm';
+    if (score <= -6) return 'Heavy';
+    if (score <= -2) return 'Melancholy';
+    return 'Balanced';
+  };
+
   const gaugeData = data ? [
     { name: 'Score', value: getScorePercentage(), fill: getScorePercentage() > 50 ? '#4ade80' : '#f87171' },
     { name: 'Gray', value: 100 - getScorePercentage(), fill: 'rgba(255,255,255,0.1)' }
@@ -69,7 +139,32 @@ function App() {
     return new Date(isoString).toLocaleDateString('en-US', options);
   };
 
+  const getLyricsStats = () => {
+    if (!data?.lyrics) return { lines: 0, words: 0 };
+
+    return {
+      lines: data.lyrics.split('\n').filter((line) => line.trim()).length,
+      words: data.lyrics.split(/\s+/).filter(Boolean).length
+    };
+  };
+
+  const analysisSummary = data
+    ? `${data.track.song} by ${data.track.artist}: ${data.analysis.vibe} (${data.analysis.score}/10). ${data.analysis.meaning}`
+    : '';
+
+  const copyText = async (text, action) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedAction(action);
+      setTimeout(() => setCopiedAction(null), 1800);
+    } catch {
+      setError('Could not copy to clipboard in this browser.');
+    }
+  };
+
   const resultsRef = useRef(null);
+  const initialSearchRef = useRef(false);
+  const lyricsStats = getLyricsStats();
 
   useEffect(() => {
     if (data && resultsRef.current) {
@@ -78,6 +173,39 @@ function App() {
       }, 100);
     }
   }, [data]);
+
+  useEffect(() => {
+    const savedSearches = localStorage.getItem('tuneturtle:recent-searches');
+    if (savedSearches) {
+      setRecentSearches(JSON.parse(savedSearches));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initialSearchRef.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const artist = params.get('artist');
+    const song = params.get('song');
+
+    if (artist && song) {
+      initialSearchRef.current = true;
+      fetchAnalysis(artist, song);
+    }
+  }, [fetchAnalysis]);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStep(0);
+      return undefined;
+    }
+
+    const intervalId = setInterval(() => {
+      setLoadingStep((step) => (step + 1) % loadingMessages.length);
+    }, 1600);
+
+    return () => clearInterval(intervalId);
+  }, [loading]);
 
   return (
     <div className={`app-container ${getThemeClass()}`}>
@@ -107,6 +235,19 @@ function App() {
         >
           Discover the hidden meaning behind your favorite tracks.
         </motion.p>
+
+        <div className="quick-start-row">
+          {['Frank Ocean', 'Taylor Swift', 'Kendrick Lamar'].map((artist) => (
+            <button
+              key={artist}
+              type="button"
+              className="quick-chip"
+              onClick={() => setInput({ artist, song: '' })}
+            >
+              {artist}
+            </button>
+          ))}
+        </div>
         
         <form onSubmit={handleSearch} className="search-box glass">
           <div className="input-group">
@@ -129,12 +270,52 @@ function App() {
             />
           </div>
 
-          <button disabled={loading}>
+          <button
+            type="submit"
+            disabled={loading || !input.artist.trim() || !input.song.trim()}
+            aria-label="Analyze song"
+          >
             {loading ? <div className="spinner"></div> : <Search size={20} />}
           </button>
         </form>
+
+        {recentSearches.length > 0 && !data && (
+          <div className="recent-searches">
+            <span><Clock size={15} /> Recent</span>
+            <div className="recent-list">
+              {recentSearches.map((item) => (
+                <button
+                  key={`${item.artist}-${item.song}`}
+                  type="button"
+                  onClick={() => fetchAnalysis(item.artist, item.song)}
+                >
+                  {item.song} <span>by {item.artist}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         
         {error && <div className="error-msg"><AlertCircle size={16}/> {error}</div>}
+
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              className="loading-panel glass-panel"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+            >
+              <div className="sound-bars" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <p>{loadingMessages[loadingStep]}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <AnimatePresence>
@@ -153,6 +334,16 @@ function App() {
                 <div className="track-info">
                   <h2>{data.track.song}</h2>
                   <p>{data.track.artist}</p>
+                </div>
+                <div className="album-actions">
+                  <button type="button" onClick={() => copyText(analysisSummary, 'summary')}>
+                    {copiedAction === 'summary' ? <Check size={16} /> : <Clipboard size={16} />}
+                    {copiedAction === 'summary' ? 'Copied' : 'Copy summary'}
+                  </button>
+                  <button type="button" onClick={() => copyText(window.location.href, 'link')}>
+                    {copiedAction === 'link' ? <Check size={16} /> : <Share2 size={16} />}
+                    {copiedAction === 'link' ? 'Copied' : 'Copy link'}
+                  </button>
                 </div>
               </div>
 
@@ -180,6 +371,21 @@ function App() {
                   <div className="score-label">
                     <span className="big-score">{data.analysis.score}</span>
                     <span className="vibe-text">{data.analysis.vibe}</span>
+                  </div>
+                </div>
+
+                <div className="vibe-metrics">
+                  <div>
+                    <span>Mood</span>
+                    <strong>{getMoodLabel()}</strong>
+                  </div>
+                  <div>
+                    <span>Lines</span>
+                    <strong>{lyricsStats.lines}</strong>
+                  </div>
+                  <div>
+                    <span>Words</span>
+                    <strong>{lyricsStats.words}</strong>
                   </div>
                 </div>
 
@@ -214,6 +420,7 @@ function App() {
                             <div className="rec-info">
                               <span className="rec-song">{rec.song}</span>
                               <span className="rec-artist">{rec.artist}</span>
+                              {rec.reason && <span className="rec-reason">{rec.reason}</span>}
                             </div>
                           </div>
                       ))}
@@ -288,6 +495,10 @@ function App() {
                     <span>View on Genius</span>
                     <ExternalLink size={16} />
                   </a>
+                  <button type="button" className="link-btn reset-btn" onClick={resetSearch}>
+                    <span>New Search</span>
+                    <RotateCcw size={16} />
+                  </button>
                 </div>
               </div>
 
@@ -296,7 +507,18 @@ function App() {
             <div className="right-panel">
               <div className="card lyrics-card glass-panel">
                 <div className="lyrics-header">
-                  <h3>Lyrics</h3>
+                  <div>
+                    <h3>Lyrics</h3>
+                    <span>{lyricsStats.lines} lines captured</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="lyrics-copy-btn"
+                    onClick={() => copyText(data.lyrics, 'lyrics')}
+                  >
+                    {copiedAction === 'lyrics' ? <Check size={16} /> : <Music2 size={16} />}
+                    {copiedAction === 'lyrics' ? 'Copied' : 'Copy lyrics'}
+                  </button>
                 </div>
                 
                 <div className="lyrics-scroller">
