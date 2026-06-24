@@ -18,8 +18,27 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 app.use(cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173"
+    origin: function (origin, callback) {
+
+        if (!origin) return callback(null, true);
+
+        if (origin === process.env.CLIENT_ORIGIN) {
+            return callback(null, true);
+        }
+
+        if (origin.startsWith("http://localhost:")) {
+            return callback(null, true);
+        }
+
+        if (origin.endsWith("vercel.app")) {
+            return callback(null, true);
+        }
+
+        console.error(`CORS Blocked: The origin ${origin} is not allowed.`);
+        return callback(new Error('CORS policy violation'), false);
+    }
 }));
+
 app.use(express.json({ limit: "64kb" }));
 
 function validateSongRequest(artist, song)
