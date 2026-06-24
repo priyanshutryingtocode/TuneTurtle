@@ -273,6 +273,51 @@ app.post("/api/analyze", async (req, res) =>
     }
 });
 
+// Add this in server/index.js (below your /api/analyze route)
+
+app.post("/api/chat", async (req, res) => {
+    const { message, history, lyrics, track } = req.body;
+
+    if (!message || !lyrics) {
+        return res.status(400).json({ success: false, error: "Missing required chat data." });
+    }
+
+    try {
+        // Construct the initial system context so Gemini knows what song we are discussing
+        const systemInstruction = `You are a music lore expert. The user is asking about the song "${track?.song}" by ${track?.artist}. 
+        Use the following lyrics to answer their questions. Keep answers concise, insightful, and engaging.
+        
+        Lyrics Context:
+        ${lyrics.substring(0, 3000)}`;
+
+        // Map the frontend history format to Gemini's required format
+        const formattedHistory = [
+            { role: "user", parts: [{ text: systemInstruction }] },
+            { role: "model", parts: [{ text: "Understood. I am ready to discuss the track." }] },
+            ...(history || []).map(msg => ({
+                role: msg.role === "user" ? "user" : "model",
+                parts: [{ text: msg.text }]
+            }))
+        ];
+
+        // Initialize the chat session
+        const chatSession = model.startChat({
+            history: formattedHistory,
+            generationConfig: { maxOutputTokens: 300 } 
+        });
+
+        // Send the new message
+        const result = await chatSession.sendMessage(message);
+        const responseText = result.response.text();
+
+        res.json({ success: true, text: responseText });
+
+    } catch (err) {
+        console.error("Chat Error:", err.message);
+        res.status(500).json({ success: false, error: "Failed to generate chat response." });
+    }
+});
+
 app.listen(PORT, () => 
 {
     console.log(`Server running on http://localhost:${PORT}`);
