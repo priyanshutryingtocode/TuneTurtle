@@ -243,7 +243,7 @@ app.post("/api/analyze", async (req, res) =>
         const responseText = result.response.text();
         const aiData = normalizeAnalysis(JSON.parse(extractJsonObject(responseText)));
 
-        res.json({
+        const responseData = {
             success: true,
             track:
             { 
@@ -258,7 +258,9 @@ app.post("/api/analyze", async (req, res) =>
             },
             lyrics: lyrics,
             analysis: aiData
-        });
+        };
+
+        res.json(responseData);
 
     } catch (err) 
     {
