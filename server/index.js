@@ -190,40 +190,49 @@ app.post("/api/analyze", async (req, res) =>
 
 
         let lyrics = "";
-        try 
-        {
+        try {
+            // Attempt 1: Genius Web Scraper
             lyrics = await withTimeout(firstSong.lyrics(), "Genius lyrics fetch");
             console.log("Lyrics fetched from Genius");
         } 
-        catch (err) 
-        {
-            console.log(`Genius lyrics failed (${err.message}). Switching to LRCLIB...`);
+        catch (err) {
+            console.log(`Genius blocked (${err.message}). Engaging smart fallback...`);
             
-            try 
-            {
-                const cleanArtist = encodeURIComponent(firstSong.artist.name);
-                const cleanSong = encodeURIComponent(firstSong.title);
+            try {
+                // 1. Clean the title to improve search accuracy
+                // Removes things like "(feat. Artist)" or "- Remastered 2020"
+                const cleanTitle = firstSong.title
+                    .replace(/\s*\(.*?\)/g, '') 
+                    .replace(/\s*-.*$/, '')    
+                    .trim();
                 
-                const fallbackData = await fetchJsonWithTimeout(
-                    `https://lrclib.net/api/get?artist_name=${cleanArtist}&track_name=${cleanSong}`,
-                    "LRCLIB"
+                const query = encodeURIComponent(`${firstSong.artist.name} ${cleanTitle}`);
+                
+                // 2. Use the Search endpoint instead of the Exact Get endpoint
+                const fallbackResults = await fetchJsonWithTimeout(
+                    `https://lrclib.net/api/search?q=${query}`,
+                    "LRCLIB Search"
                 );
                 
-                if (!fallbackData.plainLyrics) 
-                {
-                    throw new Error("Track found, but no lyrics text available");
+                if (!fallbackResults || fallbackResults.length === 0) {
+                    throw new Error("No results from fallback search");
                 }
                 
-                lyrics = fallbackData.plainLyrics;
-                console.log("Lyrics successfully fetched from LRCLIB!");
+                // 3. Find the first result that actually contains plain text lyrics
+                const validTrack = fallbackResults.find(track => track.plainLyrics && track.plainLyrics.length > 50);
                 
-            } catch (fallbackErr) 
-            {
-                console.error("Fallback also failed:", fallbackErr.message);
-                return res.status(500).json
-                ({ 
+                if (!validTrack) {
+                    throw new Error("Tracks found, but none contained text lyrics");
+                }
+                
+                lyrics = validTrack.plainLyrics;
+                console.log("Lyrics successfully fetched from LRCLIB Search!");
+                
+            } catch (fallbackErr) {
+                console.error("Fallback completely failed:", fallbackErr.message);
+                return res.status(500).json({ 
                     success: false, 
-                    error: "Could not retrieve lyrics. Cloudflare blocked the primary source, and the fallback missed." 
+                    error: "Could not retrieve lyrics. Cloudflare blocked the primary source, and the fallback database missed." 
                 });
             }
         }
