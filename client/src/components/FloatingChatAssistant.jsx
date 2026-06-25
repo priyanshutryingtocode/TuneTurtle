@@ -46,6 +46,19 @@ export default function FloatingChatAssistant({ lyrics, track }) {
         }
     };
 
+    const formatMessage = (text) => {
+        if (!text) return null;
+        
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        
+        return parts.map((part, index) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={index} style={{ color: '#fff', fontWeight: 600 }}>{part.slice(2, -2)}</strong>;
+            }
+            return <span key={index}>{part}</span>;
+        });
+    };
+
     return createPortal(
         <div className="chat-assistant-wrapper">
             <AnimatePresence>
@@ -80,7 +93,7 @@ export default function FloatingChatAssistant({ lyrics, track }) {
                                         {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                                     </div>
                                     <div className={`chat-bubble ${msg.role === 'user' ? 'user-bubble' : 'bot-bubble'}`}>
-                                        {msg.text}
+                                        {formatMessage(msg.text)}
                                     </div>
                                 </div>
                             ))}
