@@ -191,7 +191,6 @@ app.post("/api/analyze", async (req, res) =>
 
         let lyrics = "";
         try {
-            // Attempt 1: Genius Web Scraper
             lyrics = await withTimeout(firstSong.lyrics(), "Genius lyrics fetch");
             console.log("Lyrics fetched from Genius");
         } 
@@ -199,8 +198,7 @@ app.post("/api/analyze", async (req, res) =>
             console.log(`Genius blocked (${err.message}). Engaging smart fallback...`);
             
             try {
-                // 1. Clean the title to improve search accuracy
-                // Removes things like "(feat. Artist)" or "- Remastered 2020"
+
                 const cleanTitle = firstSong.title
                     .replace(/\s*\(.*?\)/g, '') 
                     .replace(/\s*-.*$/, '')    
@@ -208,7 +206,6 @@ app.post("/api/analyze", async (req, res) =>
                 
                 const query = encodeURIComponent(`${firstSong.artist.name} ${cleanTitle}`);
                 
-                // 2. Use the Search endpoint instead of the Exact Get endpoint
                 const fallbackResults = await fetchJsonWithTimeout(
                     `https://lrclib.net/api/search?q=${query}`,
                     "LRCLIB Search"
@@ -218,7 +215,6 @@ app.post("/api/analyze", async (req, res) =>
                     throw new Error("No results from fallback search");
                 }
                 
-                // 3. Find the first result that actually contains plain text lyrics
                 const validTrack = fallbackResults.find(track => track.plainLyrics && track.plainLyrics.length > 50);
                 
                 if (!validTrack) {
@@ -301,7 +297,6 @@ app.post("/api/analyze", async (req, res) =>
     }
 });
 
-// Add this in server/index.js (below your /api/analyze route)
 
 app.post("/api/chat", async (req, res) => {
     const { message, history, lyrics, track } = req.body;
@@ -311,14 +306,12 @@ app.post("/api/chat", async (req, res) => {
     }
 
     try {
-        // Construct the initial system context so Gemini knows what song we are discussing
         const systemInstruction = `You are a music lore expert. The user is asking about the song "${track?.song}" by ${track?.artist}. 
         Use the following lyrics to answer their questions. Keep answers concise, insightful, and engaging.
         
         Lyrics Context:
         ${lyrics.substring(0, 3000)}`;
 
-        // Map the frontend history format to Gemini's required format
         const formattedHistory = [
             { role: "user", parts: [{ text: systemInstruction }] },
             { role: "model", parts: [{ text: "Understood. I am ready to discuss the track." }] },
@@ -328,13 +321,11 @@ app.post("/api/chat", async (req, res) => {
             }))
         ];
 
-        // Initialize the chat session
         const chatSession = model.startChat({
             history: formattedHistory,
-            generationConfig: { maxOutputTokens: 300 } 
+            // generationConfig: { maxOutputTokens: 1000 } 
         });
 
-        // Send the new message
         const result = await chatSession.sendMessage(message);
         const responseText = result.response.text();
 

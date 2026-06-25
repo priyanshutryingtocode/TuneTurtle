@@ -28,19 +28,6 @@ export default function SearchSection({
         Discover the hidden meaning behind your favorite tracks.
       </motion.p>
 
-      <div className="quick-start-row">
-        {['Frank Ocean', 'Taylor Swift', 'Kendrick Lamar'].map((artist) => (
-          <button
-            key={artist}
-            type="button"
-            className="quick-chip"
-            onClick={() => setInput({ artist, song: '' })}
-          >
-            {artist}
-          </button>
-        ))}
-      </div>
-
       <form onSubmit={handleSearch} className="search-box glass">
         <div className="input-group">
           <User size={18} className="input-icon" />

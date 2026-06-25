@@ -66,12 +66,12 @@ export default function AnalyticsCard({ analysis, track, lyricsStats, fetchAnaly
       <div className="analysis-content">
         <div className="meaning-box">
           <h4>What does this song mean?</h4>
-          <p>"{analysis.meaning}"</p>
+          <p>{analysis.meaning}</p>
         </div>
 
         <div className="themes-list">
           {analysis.themes?.map((theme, i) => (
-            <span key={i} className="theme-tag">#{theme}</span>
+            <span key={i} className="theme-tag">{theme}</span>
           ))}
         </div>
       </div>
